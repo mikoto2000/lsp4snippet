@@ -35,3 +35,15 @@ dependencies {
 
 // Define the main class for the application
 mainClassName = 'jp.dip.oyasirazu.lsp4snippet.App'
+version = '1.0.0'
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Lsp for Snippet.'
+        attributes 'Implementation-Version': version
+        attributes "Main-Class" : mainClassName
+    }
+    from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
