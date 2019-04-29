@@ -1,5 +1,6 @@
 package jp.dip.oyasirazu.lsp4snippet;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,9 +24,17 @@ public class SnippetTextDocumentService implements TextDocumentService {
      */
     public SnippetTextDocumentService() {}
 
+    /**
+     * ファイル・カーソル情報を受け取り、補完候補を返却する。
+     *
+     * 本実装では、無条件で `LabelOnly` という補完候補を表示する。
+     */
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>>  completion(CompletionParams params) {
-        return CompletableFuture.completedFuture(null);
+        var completionItem = new CompletionItem("LabelOnly");
+        List<CompletionItem> completionItemList = new ArrayList<>();
+        completionItemList.add(completionItem);
+        return CompletableFuture.completedFuture(Either.forLeft(completionItemList));
     }
 
     @Override
