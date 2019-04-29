@@ -90,7 +90,7 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
             client.logMessage( new MessageParams(MessageType.Info, "Start getTextDocumentService."));
         }
 
-        return null;
+        return new SnippetTextDocumentService();
     }
 
     @Override
