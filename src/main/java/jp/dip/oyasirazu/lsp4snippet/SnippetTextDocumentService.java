@@ -25,6 +25,8 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
  */
 public class SnippetTextDocumentService implements TextDocumentService {
 
+    private final boolean IS_DEBUG = false;
+
     /**
      * このサービスが管理するテキストドキュメント
      *
@@ -50,16 +52,21 @@ public class SnippetTextDocumentService implements TextDocumentService {
         var labelOnlyItem = new CompletionItem("LabelOnly");
 
         // カーソル位置に `newText!!!` という文字列を挿入する
-        // ※ `new` と入力した時点でこの補完候補を選ぶと `newnewText!!!` になる
-        var textEdit = new TextEdit(new Range(params.getPosition(), params.getPosition()), "newText!!!");
-        var textEditItem = new CompletionItem("textEdit");
+        var label = "textEdit";
+        var targetText = this.textDocuments.get(params.getTextDocument().getUri());
+        var cursorPosition = params.getPosition();
+        var startPosition = this.calculateStartPosition(targetText, cursorPosition, label);
+        var textEdit = new TextEdit(
+                new Range(
+                    startPosition,
+                    params.getPosition()),
+                "newText!!!");
+        var textEditItem = new CompletionItem(label);
         textEditItem.setTextEdit(textEdit);
 
         // 以下のパラメーターを設定した補完アイテム
         // Label : 補完リクエストを出したときのカーソルインデックス
         // Detail: 補完リクエストを出したときのカーソル位置の文字
-        var targetText = this.textDocuments.get(params.getTextDocument().getUri());
-        var cursorPosition = params.getPosition();
         var cursorIndex = this.getIndex(targetText, cursorPosition);
         var cursorIndexItem = new CompletionItem(String.valueOf(cursorIndex));
         cursorIndexItem.setDetail(String.valueOf(targetText.charAt(cursorIndex)));
@@ -123,5 +130,48 @@ public class SnippetTextDocumentService implements TextDocumentService {
         }
 
         return positionIndex;
+    }
+
+    private Position calculateStartPosition(StringBuilder textDocument, Position cursorPosition, String label) {
+        var labelLength = label.length();
+        if (IS_DEBUG) {
+            System.err.printf("labelLength: %d.\n", labelLength);
+        }
+
+        // 入力済み文字列とラベル文字列を比較するため、
+        // 対象のテキストドキュメントからラベル長分だけ文字列を取得
+        var cursorIndex = this.getIndex(textDocument, cursorPosition);
+        var targetStringStartIndex = cursorIndex - labelLength;
+        if (targetStringStartIndex < 0) {
+            targetStringStartIndex = 0;
+        }
+        String targetString = textDocument.substring(targetStringStartIndex, cursorIndex);
+        if (IS_DEBUG) {
+            System.err.printf("targetString: %s.\n", targetString);
+        }
+
+        // 入力済み文字列とラベル文字列を比較し、
+        // 一番長く一致する場所を探す
+        // 一番長く一致した文字列が「入力済み文字列」
+        // 「入力済み文字列」は `inputedChars` に格納
+        String inputedChars = "";
+        for (int i = labelLength; i >= 0; i--) {
+            var inputedChars_tmp = label.substring(0, i);
+            if (IS_DEBUG) {
+                System.err.printf("inputedChars_tmp: %s.\n", inputedChars_tmp);
+            }
+            if (targetString.lastIndexOf(inputedChars_tmp) > 0) {
+                inputedChars = inputedChars_tmp;
+                break;
+            }
+        }
+        if (IS_DEBUG) {
+            System.err.printf("inputedChars: %s.\n", inputedChars);
+        }
+
+        // Range の startPosition として、「入力済み文字列の先頭」を返却
+        return new Position(
+                cursorPosition.getLine(),
+                cursorPosition.getCharacter() - inputedChars.length());
     }
 }
