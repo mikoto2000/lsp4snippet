@@ -11,6 +11,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -31,9 +33,21 @@ public class SnippetTextDocumentService implements TextDocumentService {
      */
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>>  completion(CompletionParams params) {
-        var completionItem = new CompletionItem("LabelOnly");
+        // `LabelOnly` を補完
+        var labelOnlyItem = new CompletionItem("LabelOnly");
+
+        // カーソル位置に `newText!!!` という文字列を挿入する
+        // ※ `new` と入力した時点でこの補完候補を選ぶと `newnewText!!!` になる
+        var textEdit = new TextEdit(new Range(params.getPosition(), params.getPosition()), "newText!!!");
+        var textEditItem = new CompletionItem("textEdit");
+        textEditItem.setTextEdit(textEdit);
+
+
         List<CompletionItem> completionItemList = new ArrayList<>();
-        completionItemList.add(completionItem);
+        completionItemList.add(labelOnlyItem);
+        completionItemList.add(textEditItem);
+
+
         return CompletableFuture.completedFuture(Either.forLeft(completionItemList));
     }
 
