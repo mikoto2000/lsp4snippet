@@ -1,10 +1,12 @@
 package jp.dip.oyasirazu.lsp4snippet;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
@@ -20,6 +22,8 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
+import jp.dip.oyasirazu.lsp4snippet.snippet.SnippetSupplier;
+
 /**
  * SnippetTextDocumentService
  */
@@ -34,11 +38,24 @@ public class SnippetTextDocumentService implements TextDocumentService {
      */
     private Map<String, StringBuilder> textDocuments;
 
+    private SnippetSupplier snippetSupplier;
+
     /**
      * Constructor
      */
     public SnippetTextDocumentService() {
         this.textDocuments = new HashMap<String, StringBuilder>();
+
+        // ビルトイン設定を読み込んで SnippetSupplier をインスタンス化
+        try {
+            var yaml = new InputStreamReader(
+                        ClassLoader.getSystemResourceAsStream("snippets/java.yaml"),
+                        "UTF-8");
+
+            this.snippetSupplier = SnippetSupplier.createFromYaml(yaml);
+        } catch (IOException e) {
+            System.err.printf("Catch exception: %s\n", e);
+        }
     }
 
     /**
@@ -48,34 +65,31 @@ public class SnippetTextDocumentService implements TextDocumentService {
      */
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>>  completion(CompletionParams params) {
-        // `LabelOnly` を補完
-        var labelOnlyItem = new CompletionItem("LabelOnly");
 
-        // カーソル位置に `newText!!!` という文字列を挿入する
-        var label = "textEdit";
+        // java のスニペットを全部追加
+        var snippets = this.snippetSupplier.getSnippets("java");
+        if (IS_DEBUG) {
+            System.err.printf("snippets: %s\n", snippets);
+        }
+
         var targetText = this.textDocuments.get(params.getTextDocument().getUri());
         var cursorPosition = params.getPosition();
-        var startPosition = this.calculateStartPosition(targetText, cursorPosition, label);
-        var textEdit = new TextEdit(
-                new Range(
-                    startPosition,
-                    params.getPosition()),
-                "newText!!!");
-        var textEditItem = new CompletionItem(label);
-        textEditItem.setTextEdit(textEdit);
 
-        // 以下のパラメーターを設定した補完アイテム
-        // Label : 補完リクエストを出したときのカーソルインデックス
-        // Detail: 補完リクエストを出したときのカーソル位置の文字
-        var cursorIndex = this.getIndex(targetText, cursorPosition);
-        var cursorIndexItem = new CompletionItem(String.valueOf(cursorIndex));
-        cursorIndexItem.setDetail(String.valueOf(targetText.charAt(cursorIndex)));
+        List<CompletionItem> completionItemList = snippets.stream().map(i ->
+                {
+                    var label = i.getLabel();
+                    var startPosition = this.calculateStartPosition(targetText, cursorPosition, label);
+                    var textEdit = new TextEdit(
+                            new Range(
+                                startPosition,
+                                params.getPosition()),
+                            i.getNewText());
+                    var textEditItem = new CompletionItem(label);
+                    textEditItem.setTextEdit(textEdit);
+                    textEditItem.setDetail(i.getDescription());
 
-        List<CompletionItem> completionItemList = new ArrayList<>();
-        completionItemList.add(labelOnlyItem);
-        completionItemList.add(textEditItem);
-        completionItemList.add(cursorIndexItem);
-
+                    return textEditItem;
+                }).collect(Collectors.toList());
 
         return CompletableFuture.completedFuture(Either.forLeft(completionItemList));
     }
