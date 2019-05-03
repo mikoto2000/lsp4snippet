@@ -1,0 +1,16 @@
+snippets:
+    test:
+        - label: label1
+          description: description1
+          newText: newText1
+        - label: label2
+          description: description2
+          newText: newText2
+    no_contain_file_type:
+        - label: label3
+          description: description3
+          newText: newText3
+        - label: label4
+          description: description4
+          newText: newText4
+

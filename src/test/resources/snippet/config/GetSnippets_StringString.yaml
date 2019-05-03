@@ -1,0 +1,18 @@
+snippets:
+    test:
+        - label: aaaa
+          description: aaaa description
+          newText: newText1
+        - label: aaab
+          description: aaab description
+          newText: newText2
+        - label: aabb
+          description: dabb escription
+          newText: newText3
+        - label: abbb
+          description: abbb description
+          newText: newText4
+        - label: bbbb
+          description: bbbb description
+          newText: newText5
+
