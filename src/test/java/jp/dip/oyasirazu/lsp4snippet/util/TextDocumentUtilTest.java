@@ -5,11 +5,26 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 
 /**
  * TextDocumentUtilTest
  */
 public class TextDocumentUtilTest {
+
+    @Test
+    public void testGetFileExtension() {
+        var textDocument = new TextDocumentIdentifier("test.md");
+        var fileExtension = TextDocumentUtil.getFileExtension(textDocument);
+        assertEquals("If `test.md` then `md`.", "md", fileExtension);
+    }
+
+    @Test
+    public void testGetFileExtension_noExtension() {
+        var textDocument = new TextDocumentIdentifier("test");
+        var fileExtension = TextDocumentUtil.getFileExtension(textDocument);
+        assertEquals("If no extension then empty string.", "", fileExtension);
+    }
 
     @Test
     public void testGetIndex_firstLine() {

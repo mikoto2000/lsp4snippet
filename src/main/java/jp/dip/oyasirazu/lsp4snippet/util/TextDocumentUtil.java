@@ -1,12 +1,25 @@
 package jp.dip.oyasirazu.lsp4snippet.util;
 
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 
 /**
  * TextDocumentUtil
  */
 public class TextDocumentUtil {
     private TextDocumentUtil() {}
+
+    /**
+     * 指定されたテキストドキュメントの拡張子を取得する。
+     *
+     * @param textDocumentIdentifier テキストドキュメント
+     * @return テキストドキュメントの拡張子
+     */
+    public static String getFileExtension(TextDocumentIdentifier textDocumentIdentifier) {
+        var targetUri = textDocumentIdentifier.getUri();
+        var targetUriLastDotIndex = targetUri.lastIndexOf(".");
+        return targetUri.substring(targetUriLastDotIndex + 1);
+    }
 
     /**
      * text 内の position を示すインデックス番号を取得する。

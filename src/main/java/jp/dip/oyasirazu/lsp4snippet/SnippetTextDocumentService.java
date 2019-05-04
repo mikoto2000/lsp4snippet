@@ -73,10 +73,8 @@ public class SnippetTextDocumentService implements TextDocumentService {
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>>  completion(CompletionParams params) {
 
         // ファイル拡張子取得
-        // TODO: Util 化して、拡張子 -> filetype 変換まで面倒見るようにしたい
-        var targetUri = params.getTextDocument().getUri();
-        var targetUriLastDotIndex = targetUri.lastIndexOf(".");
-        var fileExtension = targetUri.substring(targetUriLastDotIndex + 1);
+        // TODO: 拡張子 -> filetype 変換まで面倒見るようにしたい
+        var fileExtension = TextDocumentUtil.getFileExtension(params.getTextDocument());
         if (IS_DEBUG) {
             System.err.printf("fileExtension: %s\n", fileExtension);
         }
@@ -85,6 +83,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
         // 入力済み文字列: カーソル位置直前の 「/\w/(単語にマッチする正規表現)」
         // TODO: メソッド化
 
+        var targetUri = params.getTextDocument().getUri();
         var targetText = this.textDocuments.get(targetUri);
         var cursorPosition = params.getPosition();
         var cursorPositionIndex = TextDocumentUtil.getIndex(targetText, cursorPosition);
