@@ -18,6 +18,13 @@ public class TextDocumentUtil {
     public static String getFileExtension(TextDocumentIdentifier textDocumentIdentifier) {
         var targetUri = textDocumentIdentifier.getUri();
         var targetUriLastDotIndex = targetUri.lastIndexOf(".");
+
+        // 拡張子が無い場合には空文字を返却する
+        if (targetUriLastDotIndex < 0) {
+            return "";
+        }
+
+        // 拡張子が存在する場合には、拡張子を返却する
         return targetUri.substring(targetUriLastDotIndex + 1);
     }
 
