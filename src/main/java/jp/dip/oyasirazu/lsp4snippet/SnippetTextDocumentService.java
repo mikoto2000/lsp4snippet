@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import jp.dip.oyasirazu.lsp4snippet.snippet.SnippetSupplier;
+import jp.dip.oyasirazu.lsp4snippet.util.TextDocumentUtil;;
 
 /**
  * SnippetTextDocumentService
@@ -86,7 +87,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
         var targetText = this.textDocuments.get(targetUri);
         var cursorPosition = params.getPosition();
-        var cursorPositionIndex = getIndex(targetText, cursorPosition);
+        var cursorPositionIndex = TextDocumentUtil.getIndex(targetText, cursorPosition);
 
         // TODO: `\r\n`, `\r` 改行コードへの対応
         var topToCursorString = targetText.substring(0, cursorPositionIndex);
@@ -197,26 +198,6 @@ public class SnippetTextDocumentService implements TextDocumentService {
     public void didSave(DidSaveTextDocumentParams params) {
     }
 
-    private int getIndex(StringBuilder text, Position position) {
-        var lineIndex = position.getLine();
-        var characterIndex = position.getCharacter();
-
-        var firstOfLineIndex = 0;
-        for (int i = 0; i < lineIndex; i++) {
-            // TODO: `\r\n`, `\r` 改行コードへの対応
-            firstOfLineIndex = text.indexOf("\n", firstOfLineIndex + 1);
-        }
-
-        var positionIndex = firstOfLineIndex + characterIndex;
-
-        // indexOf で取得するのは `\n` のインデックスなので、 2 行目以降は +1 する。
-        if (firstOfLineIndex > 0) {
-            positionIndex++;
-        }
-
-        return positionIndex;
-    }
-
     private Position calculateStartPosition(StringBuilder textDocument, Position cursorPosition, String label) {
         var labelLength = label.length();
         if (IS_DEBUG) {
@@ -225,7 +206,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
         // 入力済み文字列とラベル文字列を比較するため、
         // 対象のテキストドキュメントからラベル長分だけ文字列を取得
-        var cursorIndex = this.getIndex(textDocument, cursorPosition);
+        var cursorIndex = TextDocumentUtil.getIndex(textDocument, cursorPosition);
         var targetStringStartIndex = cursorIndex - labelLength;
         if (targetStringStartIndex < 0) {
             targetStringStartIndex = 0;
