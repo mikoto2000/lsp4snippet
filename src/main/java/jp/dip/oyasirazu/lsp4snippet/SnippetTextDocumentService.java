@@ -16,7 +16,6 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
-import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -24,7 +23,8 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import jp.dip.oyasirazu.lsp4snippet.snippet.SnippetSupplier;
-import jp.dip.oyasirazu.lsp4snippet.util.TextDocumentUtil;;
+import jp.dip.oyasirazu.lsp4snippet.util.CompletionItemUtil;
+import jp.dip.oyasirazu.lsp4snippet.util.TextDocumentUtil;
 
 /**
  * SnippetTextDocumentService
@@ -146,7 +146,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
         List<CompletionItem> completionItemList = snippets.stream().map(i ->
                 {
                     var label = i.getLabel();
-                    var startPosition = this.calculateStartPosition(targetText, cursorPosition, label);
+                    var startPosition = CompletionItemUtil.getCompletingStringPosition(targetText, cursorPosition, label);
 
                     // インデントを保つために改行文字を置換
                     var newText = i.getNewText().replaceAll("\n", indentReplaceChars);
@@ -196,48 +196,5 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
-    }
-
-    private Position calculateStartPosition(StringBuilder textDocument, Position cursorPosition, String label) {
-        var labelLength = label.length();
-        if (IS_DEBUG) {
-            System.err.printf("labelLength: %d.\n", labelLength);
-        }
-
-        // 入力済み文字列とラベル文字列を比較するため、
-        // 対象のテキストドキュメントからラベル長分だけ文字列を取得
-        var cursorIndex = TextDocumentUtil.getIndex(textDocument, cursorPosition);
-        var targetStringStartIndex = cursorIndex - labelLength;
-        if (targetStringStartIndex < 0) {
-            targetStringStartIndex = 0;
-        }
-        String targetString = textDocument.substring(targetStringStartIndex, cursorIndex);
-        if (IS_DEBUG) {
-            System.err.printf("targetString: %s.\n", targetString);
-        }
-
-        // 入力済み文字列とラベル文字列を比較し、
-        // 一番長く一致する場所を探す
-        // 一番長く一致した文字列が「入力済み文字列」
-        // 「入力済み文字列」は `inputedChars` に格納
-        String inputedChars = "";
-        for (int i = labelLength; i >= 0; i--) {
-            var inputedChars_tmp = label.substring(0, i);
-            if (IS_DEBUG) {
-                System.err.printf("inputedChars_tmp: %s.\n", inputedChars_tmp);
-            }
-            if (targetString.lastIndexOf(inputedChars_tmp) >= 0) {
-                inputedChars = inputedChars_tmp;
-                break;
-            }
-        }
-        if (IS_DEBUG) {
-            System.err.printf("inputedChars: %s.\n", inputedChars);
-        }
-
-        // Range の startPosition として、「入力済み文字列の先頭」を返却
-        return new Position(
-                cursorPosition.getLine(),
-                cursorPosition.getCharacter() - inputedChars.length());
     }
 }
