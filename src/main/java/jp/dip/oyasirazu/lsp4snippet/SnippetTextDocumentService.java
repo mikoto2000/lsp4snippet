@@ -245,7 +245,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
             if (IS_DEBUG) {
                 System.err.printf("inputedChars_tmp: %s.\n", inputedChars_tmp);
             }
-            if (targetString.lastIndexOf(inputedChars_tmp) > 0) {
+            if (targetString.lastIndexOf(inputedChars_tmp) >= 0) {
                 inputedChars = inputedChars_tmp;
                 break;
             }
