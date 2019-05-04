@@ -49,11 +49,12 @@ public class SnippetTextDocumentService implements TextDocumentService {
         // ビルトイン設定を読み込んで SnippetSupplier をインスタンス化
         try {
             var yaml = new InputStreamReader(
-                        ClassLoader.getSystemResourceAsStream("snippets/java.yaml"),
+                        ClassLoader.getSystemResourceAsStream("snippets/md.yaml"),
                         "UTF-8");
 
             this.snippetSupplier = SnippetSupplier.createFromYaml(yaml);
         } catch (IOException e) {
+            // TODO: 例外送出
             System.err.printf("Catch exception: %s\n", e);
         }
     }
@@ -66,13 +67,30 @@ public class SnippetTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>>  completion(CompletionParams params) {
 
-        // java のスニペットを全部追加
-        var snippets = this.snippetSupplier.getSnippets("java");
+        // ファイル拡張子取得
+        // TODO: Util 化して、拡張子 -> filetype 変換まで面倒見るようにしたい
+        var targetUri = params.getTextDocument().getUri();
+        var targetUriLastDotIndex = targetUri.lastIndexOf(".");
+        var fileExtension = targetUri.substring(targetUriLastDotIndex + 1);
+        if (IS_DEBUG) {
+            System.err.printf("fileExtension: %s\n", fileExtension);
+        }
+
+        // 「入力済み文字列」を取得
+        // 入力済み文字列: カーソル位置直前の 「/\w/(単語にマッチする正規表現)」
+        var inputedChars = "";
+
+        // 既存インデント文字列取得
+        // 既存インデント文字列: カーソル行の「/^\s*/(空白文字列にマッチする正規表現)」
+        var indentChars = "dummy";
+
+        // 「ファイル拡張子」と「入力済み文字列」にマッチするスニペットを取得
+        var snippets = this.snippetSupplier.getSnippets(fileExtension, inputedChars);
         if (IS_DEBUG) {
             System.err.printf("snippets: %s\n", snippets);
         }
 
-        var targetText = this.textDocuments.get(params.getTextDocument().getUri());
+        var targetText = this.textDocuments.get(targetUri);
         var cursorPosition = params.getPosition();
 
         List<CompletionItem> completionItemList = snippets.stream().map(i ->
@@ -87,6 +105,8 @@ public class SnippetTextDocumentService implements TextDocumentService {
                     var textEditItem = new CompletionItem(label);
                     textEditItem.setTextEdit(textEdit);
                     textEditItem.setDetail(i.getDescription());
+
+                    // TODO: 改行文字の後ろにインデント文字列を挿入
 
                     return textEditItem;
                 }).collect(Collectors.toList());
