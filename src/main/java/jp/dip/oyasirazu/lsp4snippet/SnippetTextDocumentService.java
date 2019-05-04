@@ -33,6 +33,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
     private final boolean IS_DEBUG = false;
 
     private final Pattern PATTERN_WORD_DEFAULT = Pattern.compile("\\w+$");
+    private final Pattern PATTERN_INDENT_DEFAULT = Pattern.compile("^\\s+");
 
     /**
      * このサービスが管理するテキストドキュメント
@@ -115,17 +116,25 @@ public class SnippetTextDocumentService implements TextDocumentService {
         //     - ある: その単語が inputedChars
         //     - ない: 空文字が inputedChars
         var inputedChars = "";
-        var matcher = PATTERN_WORD_DEFAULT.matcher(topToCursorOfLineString);
-        if (matcher.find()) {
-            inputedChars = matcher.group();
+        var lastWordMatcher = PATTERN_WORD_DEFAULT.matcher(topToCursorOfLineString);
+        if (lastWordMatcher.find()) {
+            inputedChars = lastWordMatcher.group();
         }
         if (IS_DEBUG) {
             System.err.printf("inputedChars: %s\n", inputedChars);
         }
 
         // 既存インデント文字列取得
-        // 既存インデント文字列: カーソル行の「/^\s*/(空白文字列にマッチする正規表現)」
-        var indentChars = "dummy";
+        // 既存インデント文字列: カーソル行の「/^\s+/(空白文字列にマッチする正規表現)」
+        // TODO: メソッド化
+        var indentChars = "";
+        var indentMatcher = PATTERN_INDENT_DEFAULT.matcher(topToCursorOfLineString);
+        if (indentMatcher.find()) {
+            indentChars = indentMatcher.group();
+        }
+
+        // 改行文字の後ろに indentChars を追加することで、 2 行目以降のインデントを保つ
+        final var indentReplaceChars = "\n" + indentChars;
 
         // 「ファイル拡張子」と「入力済み文字列」にマッチするスニペットを取得
         var snippets = this.snippetSupplier.getSnippets(fileExtension, inputedChars);
@@ -137,16 +146,18 @@ public class SnippetTextDocumentService implements TextDocumentService {
                 {
                     var label = i.getLabel();
                     var startPosition = this.calculateStartPosition(targetText, cursorPosition, label);
+
+                    // インデントを保つために改行文字を置換
+                    var newText = i.getNewText().replaceAll("\n", indentReplaceChars);
+
                     var textEdit = new TextEdit(
                             new Range(
                                 startPosition,
                                 params.getPosition()),
-                            i.getNewText());
+                            newText);
                     var textEditItem = new CompletionItem(label);
                     textEditItem.setTextEdit(textEdit);
                     textEditItem.setDetail(i.getDescription());
-
-                    // TODO: 改行文字の後ろにインデント文字列を挿入
 
                     return textEditItem;
                 }).collect(Collectors.toList());
