@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -30,6 +31,8 @@ import jp.dip.oyasirazu.lsp4snippet.snippet.SnippetSupplier;
 public class SnippetTextDocumentService implements TextDocumentService {
 
     private final boolean IS_DEBUG = false;
+
+    private final Pattern PATTERN_WORD_DEFAULT = Pattern.compile("\\w+$");
 
     /**
      * このサービスが管理するテキストドキュメント
@@ -78,7 +81,47 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
         // 「入力済み文字列」を取得
         // 入力済み文字列: カーソル位置直前の 「/\w/(単語にマッチする正規表現)」
+        // TODO: メソッド化
+
+        var targetText = this.textDocuments.get(targetUri);
+        var cursorPosition = params.getPosition();
+        var cursorPositionIndex = getIndex(targetText, cursorPosition);
+
+        // TODO: `\r\n`, `\r` 改行コードへの対応
+        var topToCursorString = targetText.substring(0, cursorPositionIndex);
+        var cursorLineStartIndex = topToCursorString.lastIndexOf("\n");
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineStartIndex(org): %s\n", cursorLineStartIndex);
+        }
+        if (cursorLineStartIndex <= 0) {
+            cursorLineStartIndex = 0;
+        } else {
+            cursorLineStartIndex++;
+        }
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
+            System.err.printf("cursorPositionIndex: %s\n", cursorPositionIndex);
+        }
+
+        // カーソル行の先頭からカーソルまでの文字列を取得
+        var topToCursorOfLineString = targetText.substring(
+                cursorLineStartIndex,
+                cursorPositionIndex);
+        if (IS_DEBUG) {
+            System.err.printf("topToCursorOfLine: %s\n", topToCursorOfLineString);
+        }
+
+        // 正規表現で、 topToCursorOfLine の末尾に単語マッチがあるか確認
+        //     - ある: その単語が inputedChars
+        //     - ない: 空文字が inputedChars
         var inputedChars = "";
+        var matcher = PATTERN_WORD_DEFAULT.matcher(topToCursorOfLineString);
+        if (matcher.find()) {
+            inputedChars = matcher.group();
+        }
+        if (IS_DEBUG) {
+            System.err.printf("inputedChars: %s\n", inputedChars);
+        }
 
         // 既存インデント文字列取得
         // 既存インデント文字列: カーソル行の「/^\s*/(空白文字列にマッチする正規表現)」
@@ -89,9 +132,6 @@ public class SnippetTextDocumentService implements TextDocumentService {
         if (IS_DEBUG) {
             System.err.printf("snippets: %s\n", snippets);
         }
-
-        var targetText = this.textDocuments.get(targetUri);
-        var cursorPosition = params.getPosition();
 
         List<CompletionItem> completionItemList = snippets.stream().map(i ->
                 {
