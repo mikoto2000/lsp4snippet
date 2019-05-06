@@ -14,6 +14,8 @@ public class TextDocumentUtil {
 
     private static final Pattern PATTERN_WORD_DEFAULT = Pattern.compile("\\w+$");
 
+    private static final Pattern PATTERN_INDENT_DEFAULT = Pattern.compile("^\\s+");
+
     private TextDocumentUtil() {}
 
     /**
@@ -101,6 +103,36 @@ public class TextDocumentUtil {
         }
 
         return inputedChars;
+    }
+
+    public static String getIndentChars(StringBuilder textDocument, int lineNumber) {
+        var cursorLineStartIndex = TextDocumentUtil.getIndex(textDocument, new Position(lineNumber, 0));
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
+        }
+
+        var cursorLineEndIndex = textDocument.indexOf("\n", cursorLineStartIndex);
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineEndIndex: %s\n", cursorLineEndIndex);
+        }
+
+        var cursorLineString = textDocument.substring(
+                cursorLineStartIndex,
+                cursorLineEndIndex);
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineString: %s\n", cursorLineString);
+        }
+
+        var indentChars = "";
+        var indentMatcher = PATTERN_INDENT_DEFAULT.matcher(cursorLineString);
+        if (indentMatcher.find()) {
+            indentChars = indentMatcher.group();
+        }
+        if (IS_DEBUG) {
+            System.err.printf("indentChars: %s\n", indentChars);
+        }
+
+        return indentChars;
     }
 }
 

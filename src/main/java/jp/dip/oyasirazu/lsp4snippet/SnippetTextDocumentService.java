@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -32,8 +31,6 @@ import jp.dip.oyasirazu.lsp4snippet.util.TextDocumentUtil;
 public class SnippetTextDocumentService implements TextDocumentService {
 
     private final boolean IS_DEBUG = false;
-
-    private final Pattern PATTERN_INDENT_DEFAULT = Pattern.compile("^\\s+");
 
     /**
      * このサービスが管理するテキストドキュメント
@@ -91,29 +88,9 @@ public class SnippetTextDocumentService implements TextDocumentService {
         // 既存インデント文字列取得
         // 既存インデント文字列: カーソル行の「/^\s+/(空白文字列にマッチする正規表現)」
         // TODO: メソッド化
-        var cursorPositionIndex = TextDocumentUtil.getIndex(targetText, cursorPosition);
-        var topToCursorString = targetText.substring(0, cursorPositionIndex);
-        var cursorLineStartIndex = topToCursorString.lastIndexOf("\n");
+        var indentChars = TextDocumentUtil.getIndentChars(targetText, cursorPosition.getLine());
         if (IS_DEBUG) {
-            System.err.printf("cursorLineStartIndex(org): %s\n", cursorLineStartIndex);
-        }
-        if (cursorLineStartIndex <= 0) {
-            cursorLineStartIndex = 0;
-        } else {
-            cursorLineStartIndex++;
-        }
-        if (IS_DEBUG) {
-            System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
-            System.err.printf("cursorPositionIndex: %s\n", cursorPositionIndex);
-        }
-        var topToCursorOfLineString = targetText.substring(
-                cursorLineStartIndex,
-                cursorPositionIndex);
-
-        var indentChars = "";
-        var indentMatcher = PATTERN_INDENT_DEFAULT.matcher(topToCursorOfLineString);
-        if (indentMatcher.find()) {
-            indentChars = indentMatcher.group();
+            System.err.printf("indentChars: %s\n", indentChars);
         }
 
         // 改行文字の後ろに indentChars を追加することで、 2 行目以降のインデントを保つ

@@ -107,5 +107,16 @@ public class TextDocumentUtilTest {
         assertEquals("textDocument is empty, then return empty string.", "", inputedChars);
 
     }
+
+    @Test
+    public void testGetIndentChars() {
+        var textDocument = new StringBuilder("\t  test\n      test2\n");
+
+        var indentChar_line0 = TextDocumentUtil.getIndentChars(textDocument, 0);
+        assertEquals("indent chars of line 1 is `\t  `.", "\t  ", indentChar_line0);
+
+        var indentChar_line1 = TextDocumentUtil.getIndentChars(textDocument, 1);
+        assertEquals("indent chars of line 1 is `      `.", "      ", indentChar_line1);
+    }
 }
 
