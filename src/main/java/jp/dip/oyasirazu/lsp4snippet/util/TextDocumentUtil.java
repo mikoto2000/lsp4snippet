@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 
+import jp.dip.oyasirazu.lsp4snippet.TextDocumentLine;
+
 /**
  * TextDocumentUtil
  */
@@ -14,7 +16,9 @@ public class TextDocumentUtil {
 
     private static final Pattern PATTERN_WORD_DEFAULT = Pattern.compile("\\w+$");
 
-    private static final Pattern PATTERN_INDENT_DEFAULT = Pattern.compile("^\\s+");
+    // インデントとして認識する文字列
+    // 行頭の半角スペースかタブで構成された文字列にマッチする
+    private static final Pattern PATTERN_INDENT_DEFAULT = Pattern.compile("^[\\t ]+");
 
     private TextDocumentUtil() {}
 
@@ -64,28 +68,11 @@ public class TextDocumentUtil {
     }
 
     public static String getInputedChars(StringBuilder textDocument, Position cursorPosition) {
-        var cursorPositionIndex = TextDocumentUtil.getIndex(textDocument, cursorPosition);
-
-        // TODO: `\r\n`, `\r` 改行コードへの対応
-        var topToCursorString = textDocument.substring(0, cursorPositionIndex);
-        var cursorLineStartIndex = topToCursorString.lastIndexOf("\n");
-        if (IS_DEBUG) {
-            System.err.printf("cursorLineStartIndex(org): %s\n", cursorLineStartIndex);
-        }
-        if (cursorLineStartIndex <= 0) {
-            cursorLineStartIndex = 0;
-        } else {
-            cursorLineStartIndex++;
-        }
-        if (IS_DEBUG) {
-            System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
-            System.err.printf("cursorPositionIndex: %s\n", cursorPositionIndex);
-        }
+        var cursorLine = new TextDocumentLine(textDocument, cursorPosition.getLine());
 
         // カーソル行の先頭からカーソルまでの文字列を取得
-        var topToCursorOfLineString = textDocument.substring(
-                cursorLineStartIndex,
-                cursorPositionIndex);
+        var topToCursorOfLineString = cursorLine.getTextContent().substring(
+                0, cursorPosition.getCharacter());
         if (IS_DEBUG) {
             System.err.printf("topToCursorOfLine: %s\n", topToCursorOfLineString);
         }
@@ -106,25 +93,10 @@ public class TextDocumentUtil {
     }
 
     public static String getIndentChars(StringBuilder textDocument, int lineNumber) {
-        var cursorLineStartIndex = TextDocumentUtil.getIndex(textDocument, new Position(lineNumber, 0));
-        if (IS_DEBUG) {
-            System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
-        }
-
-        var cursorLineEndIndex = textDocument.indexOf("\n", cursorLineStartIndex);
-        if (IS_DEBUG) {
-            System.err.printf("cursorLineEndIndex: %s\n", cursorLineEndIndex);
-        }
-
-        var cursorLineString = textDocument.substring(
-                cursorLineStartIndex,
-                cursorLineEndIndex);
-        if (IS_DEBUG) {
-            System.err.printf("cursorLineString: %s\n", cursorLineString);
-        }
+        var cursorLine = new TextDocumentLine(textDocument, lineNumber);
 
         var indentChars = "";
-        var indentMatcher = PATTERN_INDENT_DEFAULT.matcher(cursorLineString);
+        var indentMatcher = PATTERN_INDENT_DEFAULT.matcher(cursorLine.getTextContent());
         if (indentMatcher.find()) {
             indentChars = indentMatcher.group();
         }

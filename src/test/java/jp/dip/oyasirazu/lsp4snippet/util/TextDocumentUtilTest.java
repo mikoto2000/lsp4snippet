@@ -91,7 +91,7 @@ public class TextDocumentUtilTest {
 
         {
             var textDocument = new StringBuilder("123 456\nabc defg\n");
-            var cursorPosition = new Position(0, 10);
+            var cursorPosition = new Position(1, 2);
 
             var inputedChars = TextDocumentUtil.getInputedChars(textDocument, cursorPosition);
             assertEquals("`123 456\nab|c def`, then return `ab`.", "ab", inputedChars);
@@ -117,6 +117,23 @@ public class TextDocumentUtilTest {
 
         var indentChar_line1 = TextDocumentUtil.getIndentChars(textDocument, 1);
         assertEquals("indent chars of line 1 is `      `.", "      ", indentChar_line1);
+    }
+
+    @Test
+    public void testGetIndentChars_Empty() {
+        {
+            var textDocument = new StringBuilder("");
+
+            var indentChar = TextDocumentUtil.getIndentChars(textDocument, 0);
+            assertEquals("indent chars of empty line is ``.", "", indentChar);
+        }
+
+        {
+            var textDocument = new StringBuilder("\n");
+
+            var indentChar = TextDocumentUtil.getIndentChars(textDocument, 0);
+            assertEquals("indent chars of empty line is ``.", "", indentChar);
+        }
     }
 }
 
