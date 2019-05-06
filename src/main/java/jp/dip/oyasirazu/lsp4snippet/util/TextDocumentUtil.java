@@ -1,5 +1,7 @@
 package jp.dip.oyasirazu.lsp4snippet.util;
 
+import java.util.regex.Pattern;
+
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 
@@ -7,6 +9,11 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
  * TextDocumentUtil
  */
 public class TextDocumentUtil {
+
+    private static final boolean IS_DEBUG = false;
+
+    private static final Pattern PATTERN_WORD_DEFAULT = Pattern.compile("\\w+$");
+
     private TextDocumentUtil() {}
 
     /**
@@ -52,6 +59,48 @@ public class TextDocumentUtil {
         }
 
         return positionIndex;
+    }
+
+    public static String getInputedChars(StringBuilder textDocument, Position cursorPosition) {
+        var cursorPositionIndex = TextDocumentUtil.getIndex(textDocument, cursorPosition);
+
+        // TODO: `\r\n`, `\r` 改行コードへの対応
+        var topToCursorString = textDocument.substring(0, cursorPositionIndex);
+        var cursorLineStartIndex = topToCursorString.lastIndexOf("\n");
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineStartIndex(org): %s\n", cursorLineStartIndex);
+        }
+        if (cursorLineStartIndex <= 0) {
+            cursorLineStartIndex = 0;
+        } else {
+            cursorLineStartIndex++;
+        }
+        if (IS_DEBUG) {
+            System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
+            System.err.printf("cursorPositionIndex: %s\n", cursorPositionIndex);
+        }
+
+        // カーソル行の先頭からカーソルまでの文字列を取得
+        var topToCursorOfLineString = textDocument.substring(
+                cursorLineStartIndex,
+                cursorPositionIndex);
+        if (IS_DEBUG) {
+            System.err.printf("topToCursorOfLine: %s\n", topToCursorOfLineString);
+        }
+
+        // 正規表現で、 topToCursorOfLine の末尾に単語マッチがあるか確認
+        //     - ある: その単語が inputedChars
+        //     - ない: 空文字が inputedChars
+        var inputedChars = "";
+        var lastWordMatcher = PATTERN_WORD_DEFAULT.matcher(topToCursorOfLineString);
+        if (lastWordMatcher.find()) {
+            inputedChars = lastWordMatcher.group();
+        }
+        if (IS_DEBUG) {
+            System.err.printf("inputedChars: %s\n", inputedChars);
+        }
+
+        return inputedChars;
     }
 }
 

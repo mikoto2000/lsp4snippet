@@ -33,7 +33,6 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
     private final boolean IS_DEBUG = false;
 
-    private final Pattern PATTERN_WORD_DEFAULT = Pattern.compile("\\w+$");
     private final Pattern PATTERN_INDENT_DEFAULT = Pattern.compile("^\\s+");
 
     /**
@@ -81,14 +80,18 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
         // 「入力済み文字列」を取得
         // 入力済み文字列: カーソル位置直前の 「/\w/(単語にマッチする正規表現)」
-        // TODO: メソッド化
-
         var targetUri = params.getTextDocument().getUri();
         var targetText = this.textDocuments.get(targetUri);
         var cursorPosition = params.getPosition();
-        var cursorPositionIndex = TextDocumentUtil.getIndex(targetText, cursorPosition);
+        var inputedChars = TextDocumentUtil.getInputedChars(targetText, cursorPosition);
+        if (IS_DEBUG) {
+            System.err.printf("inputedChars: %s\n", inputedChars);
+        }
 
-        // TODO: `\r\n`, `\r` 改行コードへの対応
+        // 既存インデント文字列取得
+        // 既存インデント文字列: カーソル行の「/^\s+/(空白文字列にマッチする正規表現)」
+        // TODO: メソッド化
+        var cursorPositionIndex = TextDocumentUtil.getIndex(targetText, cursorPosition);
         var topToCursorString = targetText.substring(0, cursorPositionIndex);
         var cursorLineStartIndex = topToCursorString.lastIndexOf("\n");
         if (IS_DEBUG) {
@@ -103,30 +106,10 @@ public class SnippetTextDocumentService implements TextDocumentService {
             System.err.printf("cursorLineStartIndex: %s\n", cursorLineStartIndex);
             System.err.printf("cursorPositionIndex: %s\n", cursorPositionIndex);
         }
-
-        // カーソル行の先頭からカーソルまでの文字列を取得
         var topToCursorOfLineString = targetText.substring(
                 cursorLineStartIndex,
                 cursorPositionIndex);
-        if (IS_DEBUG) {
-            System.err.printf("topToCursorOfLine: %s\n", topToCursorOfLineString);
-        }
 
-        // 正規表現で、 topToCursorOfLine の末尾に単語マッチがあるか確認
-        //     - ある: その単語が inputedChars
-        //     - ない: 空文字が inputedChars
-        var inputedChars = "";
-        var lastWordMatcher = PATTERN_WORD_DEFAULT.matcher(topToCursorOfLineString);
-        if (lastWordMatcher.find()) {
-            inputedChars = lastWordMatcher.group();
-        }
-        if (IS_DEBUG) {
-            System.err.printf("inputedChars: %s\n", inputedChars);
-        }
-
-        // 既存インデント文字列取得
-        // 既存インデント文字列: カーソル行の「/^\s+/(空白文字列にマッチする正規表現)」
-        // TODO: メソッド化
         var indentChars = "";
         var indentMatcher = PATTERN_INDENT_DEFAULT.matcher(topToCursorOfLineString);
         if (indentMatcher.find()) {

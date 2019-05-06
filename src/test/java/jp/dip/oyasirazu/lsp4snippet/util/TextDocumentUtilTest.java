@@ -70,5 +70,42 @@ public class TextDocumentUtilTest {
         int position_2_0_index = TextDocumentUtil.getIndex(textDocument, position_2_0);
         assertEquals("new Position(2, 0) then index is 8.", 8, position_2_0_index);
     }
+
+    @Test
+    public void testGetInputedChars() {
+        {
+            var textDocument = new StringBuilder("123 456\nabc defg\n");
+            var cursorPosition = new Position(0, 2);
+
+            var inputedChars = TextDocumentUtil.getInputedChars(textDocument, cursorPosition);
+            assertEquals("`12|3 456`, then return `12`.", "12", inputedChars);
+        }
+
+        {
+            var textDocument = new StringBuilder("123 456\nabc defg\n");
+            var cursorPosition = new Position(0, 7);
+
+            var inputedChars = TextDocumentUtil.getInputedChars(textDocument, cursorPosition);
+            assertEquals("`123 456|`, then return `456`.", "456", inputedChars);
+        }
+
+        {
+            var textDocument = new StringBuilder("123 456\nabc defg\n");
+            var cursorPosition = new Position(0, 10);
+
+            var inputedChars = TextDocumentUtil.getInputedChars(textDocument, cursorPosition);
+            assertEquals("`123 456\nab|c def`, then return `ab`.", "ab", inputedChars);
+        }
+    }
+
+    @Test
+    public void testGetInputedChars_Empty() {
+        var textDocument = new StringBuilder("");
+        var cursorPosition = new Position(0, 0);
+
+        var inputedChars = TextDocumentUtil.getInputedChars(textDocument, cursorPosition);
+        assertEquals("textDocument is empty, then return empty string.", "", inputedChars);
+
+    }
 }
 
