@@ -9,7 +9,11 @@ Features:
 
 - [ ] : textDocument/completion.
     - [ ] : load snippet from YAML file.
-    - [ ] : insert indent
+        - [ ] : single YAML file support.
+        - [ ] : multi YAML file support.
+        - [ ] : grub support.
+    - [x] : insert indent
+- [ ] : file extension to file type mapping mechanism
 - [ ] : incremental synchronization
 
 
