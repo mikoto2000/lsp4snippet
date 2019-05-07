@@ -3,6 +3,7 @@ package jp.dip.oyasirazu.lsp4snippet.snippet;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,6 +25,14 @@ public class SnippetSupplier {
      * </ul>
      */
     private Map<String, List<Snippet>> snippets;
+
+
+    /**
+     * Constructor
+     */
+    public SnippetSupplier() {
+        snippets = new HashMap<>();
+    }
 
     /**
      * Constructor
@@ -58,6 +67,23 @@ public class SnippetSupplier {
         return snippetForFileType.stream()
                 .filter(i -> i.getLabel().startsWith(inputedString))
                 .collect(Collectors.toList());
+    }
+
+    public SnippetSupplier merge(SnippetSupplier other) {
+        var mySnippets = new HashMap<String, List<Snippet>>(this.snippets);
+        var otherSnippets = other.snippets;
+
+        for (var key : otherSnippets.keySet()) {
+            mySnippets.merge(key,
+                    otherSnippets.getOrDefault(key, Collections.emptyList()),
+                    (myList, otherList) -> {
+                myList.addAll(otherList);
+                return myList;
+            });
+        }
+
+        System.err.println("merged: " + mySnippets);
+        return new SnippetSupplier(mySnippets);
     }
 
     public static SnippetSupplier createFromYaml(InputStreamReader yamlStream) throws IOException {

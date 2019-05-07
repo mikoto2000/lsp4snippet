@@ -3,6 +3,7 @@ package jp.dip.oyasirazu.lsp4snippet;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.*;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -12,10 +13,14 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
 
     private LanguageClient client;
 
+    private List<String> snippetFilePaths;
+
     /**
      * Constructor
      */
-    public SnippetLanguageServer() {}
+    public SnippetLanguageServer(List<String> snippetFilePaths) {
+        this.snippetFilePaths = snippetFilePaths;
+    }
 
     /**
      * 初期化パラメーターを受け取って結果を返す
@@ -90,7 +95,7 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
             client.logMessage( new MessageParams(MessageType.Info, "Start getTextDocumentService."));
         }
 
-        return new SnippetTextDocumentService();
+        return new SnippetTextDocumentService(snippetFilePaths);
     }
 
     @Override

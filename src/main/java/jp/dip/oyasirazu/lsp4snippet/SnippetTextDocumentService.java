@@ -1,5 +1,6 @@
 package jp.dip.oyasirazu.lsp4snippet;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -44,19 +45,25 @@ public class SnippetTextDocumentService implements TextDocumentService {
     /**
      * Constructor
      */
-    public SnippetTextDocumentService() {
+    public SnippetTextDocumentService(List<String> snippetFilePaths) {
         this.textDocuments = new HashMap<String, StringBuilder>();
 
-        // ビルトイン設定を読み込んで SnippetSupplier をインスタンス化
-        try {
-            var yaml = new InputStreamReader(
-                        ClassLoader.getSystemResourceAsStream("snippets/md.yaml"),
-                        "UTF-8");
+        snippetSupplier = new SnippetSupplier();
 
-            this.snippetSupplier = SnippetSupplier.createFromYaml(yaml);
-        } catch (IOException e) {
-            // TODO: 例外送出
-            System.err.printf("Catch exception: %s\n", e);
+        // 指定された設定ファイルをすべて読み込む
+        for (var snippetFilePath : snippetFilePaths) {
+            try {
+                // 設定ファイルを読み込んで SnippetSupplier をインスタンス化
+                var yaml = new InputStreamReader(
+                            new FileInputStream(snippetFilePath),
+                            "UTF-8");
+
+                // SnippetSupplier を生成してマージ
+                snippetSupplier = snippetSupplier.merge(SnippetSupplier.createFromYaml(yaml));
+            } catch (IOException e) {
+                // TODO: 例外送出
+                System.err.printf("Catch exception: %s\n", e);
+            }
         }
     }
 

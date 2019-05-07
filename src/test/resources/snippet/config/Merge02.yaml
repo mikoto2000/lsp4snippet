@@ -1,0 +1,13 @@
+snippets:
+    fileType1:
+        - label: item3
+          description: item3 description
+          newText: item3 newText
+        - label: item4
+          description: item4 description
+          newText: item4 newText
+    fileType2:
+        - label: item2
+          description: item2 description
+          newText: item2 newText
+

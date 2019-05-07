@@ -7,6 +7,19 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class AppTest {
-    @Test public void testAppHasAGreeting() {
+    @Test
+    public void testParseArgs() {
+        var options1 = App.parseArgs(new String[]{"--snippet", "snip1"});
+        assertTrue("snippet contains `snip1`", options1.getSnippetFilePaths().contains("snip1"));
+
+        var options2 = App.parseArgs(new String[]{"--snippet", "snip1", "--snippet", "snip2"});
+        assertTrue("snippet contains `snip1`", options2.getSnippetFilePaths().contains("snip1"));
+        assertTrue("snippet contains `snip2`", options2.getSnippetFilePaths().contains("snip2"));
+    }
+
+    @Test
+    public void testParseArgs_Empty() {
+        var options1 = App.parseArgs(new String[]{"--snippet", "snip1"});
+        assertEquals("snippet size is `0`", 1, options1.getSnippetFilePaths().size());
     }
 }

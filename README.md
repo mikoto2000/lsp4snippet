@@ -9,9 +9,9 @@ Features:
 
 - [ ] : textDocument/completion.
     - [ ] : load snippet from YAML file.
-        - [ ] : single YAML file support.
-        - [ ] : multi YAML file support.
-        - [ ] : grub support.
+        - [x] : single YAML file support.
+        - [x] : multi YAML file support.
+        - [ ] : glob support.
     - [x] : insert indent
 - [ ] : file extension to file type mapping mechanism
 - [ ] : incremental synchronization
@@ -21,7 +21,7 @@ Usage:
 ------
 
 ```sh
-java --add-modules=ALL-SYSTEM --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED -Declipse.application=org.eclipse.jdt.ls.core.id1 -Dosgi.bundles.defaultStartLevel=4 -Declipse.product=org.eclipse.jdt.ls.core.product -Dlog.level=ALL -noverify -Dfile.encoding=UTF-8 -Xmx1G -jar /PATH/TO/lsp4snippet-x.y.z.jar --config /PATH/TO/Configuration.yaml
+java --add-modules=ALL-SYSTEM --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED -Declipse.application=org.eclipse.jdt.ls.core.id1 -Dosgi.bundles.defaultStartLevel=4 -Declipse.product=org.eclipse.jdt.ls.core.product -Dlog.level=ALL -noverify -Dfile.encoding=UTF-8 -Xmx1G -jar /PATH/TO/lsp4snippet-x.y.z.jar --snippet /PATH/TO/Configuration.yaml
 ```
 
 

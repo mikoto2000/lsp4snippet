@@ -51,4 +51,38 @@ public class SnippetSupplierTest {
 
         // TODO: snippets に想定通りの Snippet が含まれているかのチェック
     }
+
+    @Test
+    public void testMerge() throws IOException {
+        var yaml1 = new InputStreamReader(
+                        ClassLoader.getSystemResourceAsStream("snippet/config/Merge01.yaml"),
+                        "UTF-8");
+        var ss1 = SnippetSupplier.createFromYaml(yaml1);
+
+        var yaml2 = new InputStreamReader(
+                        ClassLoader.getSystemResourceAsStream("snippet/config/Merge02.yaml"),
+                        "UTF-8");
+        var ss2 = SnippetSupplier.createFromYaml(yaml2);
+
+        var mergedSs = ss1.merge(ss2);
+
+        var fileType1Snippets = mergedSs.getSnippets("fileType1");
+        assertEquals("fileType1 size is `4`", 4, fileType1Snippets.size());
+
+        assertTrue("fileType1Snippets contains `{item1, item1 description, item1 newText}`",
+                fileType1Snippets.contains(new Snippet("item1", "item1 description", "item1 newText")));
+        assertTrue("fileType1Snippets contains `{item2, item2 description, item2 newText}`",
+                fileType1Snippets.contains(new Snippet("item2", "item2 description", "item2 newText")));
+        assertTrue("fileType1Snippets contains `{item3, item3 description, item3 newText}`",
+                fileType1Snippets.contains(new Snippet("item3", "item3 description", "item3 newText")));
+        assertTrue("fileType1Snippets contains `{item4, item4 description, item4 newText}`",
+                fileType1Snippets.contains(new Snippet("item4", "item4 description", "item4 newText")));
+
+        var fileType2Snippets = mergedSs.getSnippets("fileType2");
+        assertEquals("fileType2 size is `2`", 2, fileType2Snippets.size());
+        assertTrue("fileType2Snippets contains `{item1, item1 description, item1 newText}`",
+                fileType1Snippets.contains(new Snippet("item1", "item1 description", "item1 newText")));
+        assertTrue("fileType2Snippets contains `{item2, item2 description, item2 newText}`",
+                fileType1Snippets.contains(new Snippet("item2", "item2 description", "item2 newText")));
+    }
 }
