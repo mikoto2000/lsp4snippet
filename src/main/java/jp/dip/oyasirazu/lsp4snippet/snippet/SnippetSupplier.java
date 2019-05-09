@@ -82,7 +82,6 @@ public class SnippetSupplier {
             });
         }
 
-        System.err.println("merged: " + mySnippets);
         return new SnippetSupplier(mySnippets);
     }
 
