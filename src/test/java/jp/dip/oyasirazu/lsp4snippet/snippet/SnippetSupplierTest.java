@@ -53,6 +53,18 @@ public class SnippetSupplierTest {
     }
 
     @Test
+    public void testMarkAndAlias() throws IOException {
+        var yaml = new InputStreamReader(
+                        ClassLoader.getSystemResourceAsStream("snippet/config/AnchorAndAlias.yaml"),
+                        "UTF-8");
+        var ss = SnippetSupplier.createFromYaml(yaml);
+
+        var snippetsForMd = ss.getSnippets("md");
+        var snippetsForMarkdown = ss.getSnippets("markdown");
+        assertEquals("`md` equals `markdown`.", snippetsForMd, snippetsForMarkdown);
+    }
+
+    @Test
     public void testMerge() throws IOException {
         var yaml1 = new InputStreamReader(
                         ClassLoader.getSystemResourceAsStream("snippet/config/Merge01.yaml"),

@@ -1,0 +1,10 @@
+snippets:
+    markdown: &markdown
+        - label: label1
+          description: description1
+          newText: newText1
+        - label: label2
+          description: description2
+          newText: newText2
+    md: *markdown
+

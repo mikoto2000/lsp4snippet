@@ -8,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.Tag;
 
 /**
  * SnippetSupplier
@@ -86,8 +88,31 @@ public class SnippetSupplier {
     }
 
     public static SnippetSupplier createFromYaml(InputStreamReader yamlStream) throws IOException {
-        var mapper = new ObjectMapper(new YAMLFactory());
-        var snippetConfig = mapper.readValue(yamlStream, SnippetConfig.class);
+        var yaml = new Yaml(new Constructor() {
+                @Override
+                protected Object constructObject(Node node) {
+
+                    if (node.getTag() == Tag.MAP) {
+                        @SuppressWarnings("unchecked")
+                        var map = (Map<String, String>)(super.constructObject(node));
+
+                        // YAML の Hash が、 Snippet の条件を満たしているかを確認し、
+                        // 満たしていれば Snippet へ詰め替える。
+                        if (map.containsKey("label")
+                                    && map.containsKey("description")
+                                    && map.containsKey("newText")) {
+                            return new Snippet(
+                                    map.get("label"),
+                                    map.get("description"),
+                                    map.get("newText"));
+                        }
+                    }
+
+                    // Snippet じゃなかった場合は、デフォルトの挙動
+                    return super.constructObject(node);
+                }
+        });
+        var snippetConfig = yaml.loadAs(yamlStream, SnippetConfig.class);
         return new SnippetSupplier(snippetConfig.getSnippets());
     }
 } 
