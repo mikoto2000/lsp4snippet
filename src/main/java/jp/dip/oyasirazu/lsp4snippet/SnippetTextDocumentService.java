@@ -10,8 +10,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
@@ -123,6 +125,8 @@ public class SnippetTextDocumentService implements TextDocumentService {
                                 params.getPosition()),
                             newText);
                     var textEditItem = new CompletionItem(label);
+                    textEditItem.setKind(CompletionItemKind.Snippet);
+                    textEditItem.setInsertTextFormat(InsertTextFormat.Snippet);
                     textEditItem.setTextEdit(textEdit);
                     textEditItem.setDetail(i.getDescription());
 
