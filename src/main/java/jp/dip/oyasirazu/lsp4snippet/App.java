@@ -59,10 +59,10 @@ public class App {
 
     public static List<String> findSnippets(List<String> globs) throws IOException {
         List<String> snippets = new ArrayList<>();
-        for (var candidateGlob : globs) {
+        for (String candidateGlob : globs) {
 
             // ワイルドカードなどを含まない最長のパスを抽出
-            var splittedCandidateGlob = candidateGlob.toString().split("[\\*?\\[]");
+            String[] splittedCandidateGlob = candidateGlob.toString().split("[\\*?\\[]");
 
             // glob の特殊文字が無い場合はそれがそのままファイルパスになるので、
             // リストへ追加して次へ
@@ -72,14 +72,14 @@ public class App {
             }
 
             // 特殊文字が無い部分を取り出して Path 化
-            var searchBaseString = splittedCandidateGlob[0];
-            var searchBasePath = Paths.get(searchBaseString);
+            String searchBaseString = splittedCandidateGlob[0];
+            Path searchBasePath = Paths.get(searchBaseString);
 
             // glob の特殊文字が入った場所から後ろの部分を抽出
-            var glob = candidateGlob.substring(searchBaseString.length(), candidateGlob.length());
+            String glob = candidateGlob.substring(searchBaseString.length(), candidateGlob.length());
 
             // searchBasePath から glob で指定されたファイル群を抽出
-            var pathMatcher = FileSystems.getDefault().getPathMatcher("glob:./" + glob);
+            PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:./" + glob);
             Files.walkFileTree(searchBasePath,
                     new SimpleFileVisitor<Path>() {
                         @Override
@@ -112,19 +112,19 @@ public class App {
     public static class GlobInfo {
         private Path basePath;
         private PathMatcher pathMatcher;
-        
+
         public Path getBasePath() {
             return basePath;
         }
-        
+
         public void setBasePath(Path basePath) {
             this.basePath = basePath;
         }
-        
+
         public PathMatcher getPathMatcher() {
             return pathMatcher;
         }
-        
+
         public void setPathMatcher(PathMatcher pathMatcher) {
             this.pathMatcher = pathMatcher;
         }
