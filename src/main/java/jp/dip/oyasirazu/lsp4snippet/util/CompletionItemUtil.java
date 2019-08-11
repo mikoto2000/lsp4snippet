@@ -33,15 +33,15 @@ public class CompletionItemUtil {
             StringBuilder textDocument,
             Position cursorPosition,
             String label) {
-        var labelLength = label.length();
+        int labelLength = label.length();
         if (IS_DEBUG) {
             System.err.printf("labelLength: %d.\n", labelLength);
         }
 
         // 入力済み文字列とラベル文字列を比較するため、
         // 対象のテキストドキュメントからラベル長分だけ文字列を取得
-        var cursorIndex = TextDocumentUtil.getIndex(textDocument, cursorPosition);
-        var targetStringStartIndex = cursorIndex - labelLength;
+        int cursorIndex = TextDocumentUtil.getIndex(textDocument, cursorPosition);
+        int targetStringStartIndex = cursorIndex - labelLength;
         if (targetStringStartIndex < 0) {
             targetStringStartIndex = 0;
         }
@@ -56,7 +56,7 @@ public class CompletionItemUtil {
         // 「入力済み文字列」は `inputedChars` に格納
         String inputedChars = "";
         for (int i = labelLength; i >= 0; i--) {
-            var inputedChars_tmp = label.substring(0, i);
+            String inputedChars_tmp = label.substring(0, i);
             if (IS_DEBUG) {
                 System.err.printf("inputedChars_tmp: %s.\n", inputedChars_tmp);
             }

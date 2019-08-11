@@ -2,8 +2,9 @@ package jp.dip.oyasirazu.lsp4snippet;
 
 import java.util.List;
 
+import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
-
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -11,12 +12,12 @@ import org.kohsuke.args4j.Option;
 public class App {
 
     public static void main(String[] args) {
-        var options = parseArgs(args);
+        Options options = parseArgs(args);
 
-        var server = new SnippetLanguageServer(options.getSnippetFilePaths());
-        var launcher = LSPLauncher.createServerLauncher(server, System.in, System.out);
+        SnippetLanguageServer server = new SnippetLanguageServer(options.getSnippetFilePaths());
+        Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, System.in, System.out);
 
-        var client = launcher.getRemoteProxy();
+        LanguageClient client = launcher.getRemoteProxy();
 
         server.connect(client);
         launcher.startListening();

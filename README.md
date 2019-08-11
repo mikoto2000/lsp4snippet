@@ -29,7 +29,7 @@ java --add-modules=ALL-SYSTEM --add-opens java.base/java.util=ALL-UNNAMED --add-
 Requirements:
 -------------
 
-- OpenJDK 12 or higher
+- OpenJDK 11 or higher
 
 
 Configuration:

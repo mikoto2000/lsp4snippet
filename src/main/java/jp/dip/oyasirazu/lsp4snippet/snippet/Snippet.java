@@ -51,7 +51,7 @@ public class Snippet {
             return false;
         }
 
-        var o = (Snippet)other;
+        Snippet o = (Snippet)other;
 
         if (o.getLabel().equals(this.getLabel())
                 && o.getDescription().equals(this.getDescription())
@@ -64,7 +64,7 @@ public class Snippet {
 
     @Override
     public int hashCode() {
-        var result = 31;
+        int result = 31;
         result = 31 * result + label != null ? label.hashCode() : 0;
         result = 31 * result + description != null ? description.hashCode() : 0;
         result = 31 * result + newText != null ? newText.hashCode() : 0;

@@ -43,7 +43,7 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
         // and search `CompletionOptions`.
 
         // 補完オプションの作成
-        var completionOptions = new CompletionOptions();
+        CompletionOptions completionOptions = new CompletionOptions();
         // コード補完を ON にする
         completionOptions.setResolveProvider(true);
 
@@ -52,7 +52,7 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
         // and search `TextDocumentSyncKind`.
 
         // サーバーのサポート機能を表すオブジェクトを作成
-        var capabilities = new ServerCapabilities();
+        ServerCapabilities capabilities = new ServerCapabilities();
         // クライアントからサーバーに対して、毎回ドキュメント全体の送信を行う。
         capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
         // 先ほど作った補完オプションを capabilities に設定
@@ -62,7 +62,7 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
         // and search `InitializeResult`(contained 'capabilities' property),
 
         // InitializeResult を CompletableFuture にラップして返却
-        var result = new InitializeResult(capabilities);
+        InitializeResult result = new InitializeResult(capabilities);
         return CompletableFuture.completedFuture(result);
     }
 

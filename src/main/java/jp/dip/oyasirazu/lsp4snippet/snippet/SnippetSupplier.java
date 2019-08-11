@@ -63,7 +63,7 @@ public class SnippetSupplier {
      * @return スニペットリスト
      */
     public List<Snippet> getSnippets(String fileType, String inputedString) {
-        var snippetForFileType = this.snippets.getOrDefault(fileType, Collections.emptyList());
+        List<Snippet> snippetForFileType = this.snippets.getOrDefault(fileType, Collections.emptyList());
 
         // ラベルの先頭文字列が、入力済み文字列であるものを抽出して返却
         return snippetForFileType.stream()
@@ -72,10 +72,10 @@ public class SnippetSupplier {
     }
 
     public SnippetSupplier merge(SnippetSupplier other) {
-        var mySnippets = new HashMap<String, List<Snippet>>(this.snippets);
-        var otherSnippets = other.snippets;
+        HashMap<String, List<Snippet>> mySnippets = new HashMap<String, List<Snippet>>(this.snippets);
+        Map<String, List<Snippet>> otherSnippets = other.snippets;
 
-        for (var key : otherSnippets.keySet()) {
+        for (String key : otherSnippets.keySet()) {
             mySnippets.merge(key,
                     otherSnippets.getOrDefault(key, Collections.emptyList()),
                     (myList, otherList) -> {
@@ -88,13 +88,13 @@ public class SnippetSupplier {
     }
 
     public static SnippetSupplier createFromYaml(InputStreamReader yamlStream) throws IOException {
-        var yaml = new Yaml(new Constructor() {
+        Yaml yaml = new Yaml(new Constructor() {
                 @Override
                 protected Object constructObject(Node node) {
 
                     if (node.getTag() == Tag.MAP) {
                         @SuppressWarnings("unchecked")
-                        var map = (Map<String, String>)(super.constructObject(node));
+                        Map<String, String> map = (Map<String, String>)(super.constructObject(node));
 
                         // YAML の Hash が、 Snippet の条件を満たしているかを確認し、
                         // 満たしていれば Snippet へ詰め替える。
@@ -112,8 +112,8 @@ public class SnippetSupplier {
                     return super.constructObject(node);
                 }
         });
-        var snippetConfig = yaml.loadAs(yamlStream, SnippetConfig.class);
+        SnippetConfig snippetConfig = yaml.loadAs(yamlStream, SnippetConfig.class);
         return new SnippetSupplier(snippetConfig.getSnippets());
     }
-} 
+}
 
