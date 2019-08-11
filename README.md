@@ -7,11 +7,11 @@ Language server for snippets.
 Features:
 ---------
 
-- [ ] : textDocument/completion.
-    - [ ] : load snippet from YAML file.
+- [x] : textDocument/completion.
+    - [x] : load snippet from YAML file.
         - [x] : single YAML file support.
         - [x] : multi YAML file support.
-        - [ ] : glob support.
+        - [x] : glob support.
     - [x] : insert indent
 - [ ] : ~~file extension to file type mapping mechanism~~
     - supported by YAML anchor and alias. See: [AnchorAndAlias.yaml](./src/test/resources/snippet/config/AnchorAndAlias.yaml)

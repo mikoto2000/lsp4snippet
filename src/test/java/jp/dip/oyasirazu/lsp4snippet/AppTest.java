@@ -3,6 +3,9 @@
  */
 package jp.dip.oyasirazu.lsp4snippet;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import jp.dip.oyasirazu.lsp4snippet.App.Options;
@@ -24,5 +27,23 @@ public class AppTest {
     public void testParseArgs_Empty() {
         Options options1 = App.parseArgs(new String[]{"--snippet", "snip1"});
         assertEquals("snippet size is `0`", 1, options1.getSnippetFilePaths().size());
+    }
+
+    @Test
+    public void testFindSnippets() throws IOException {
+        var snippets = Arrays.asList("./src/test/resources/snippet/**/*.yaml");
+
+        var founds = App.findSnippets(snippets);
+        assertEquals("snippet count is `5`", 5, founds.size());
+    }
+
+    @Test
+    public void testFindSnippets_noGlob() throws IOException {
+        var snippets = Arrays.asList(
+                "./src/test/resources/snippet/config/Merge01.yaml",
+                "./src/test/resources/snippet/config/Merge02.yaml");
+
+        var founds = App.findSnippets(snippets);
+        assertEquals("snippet count is `2`", 2, founds.size());
     }
 }
