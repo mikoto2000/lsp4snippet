@@ -139,6 +139,11 @@ public class SnippetTextDocumentService implements TextDocumentService {
     }
 
     @Override
+    public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
+        return CompletableFuture.completedFuture(unresolved);
+    }
+
+    @Override
     public void didOpen(DidOpenTextDocumentParams params) {
         String uri = params.getTextDocument().getUri();
         StringBuilder textContent = new StringBuilder(params.getTextDocument().getText());
