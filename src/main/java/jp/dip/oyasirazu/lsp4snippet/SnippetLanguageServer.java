@@ -54,7 +54,7 @@ public class SnippetLanguageServer implements LanguageServer, LanguageClientAwar
         // サーバーのサポート機能を表すオブジェクトを作成
         ServerCapabilities capabilities = new ServerCapabilities();
         // クライアントからサーバーに対して、毎回ドキュメント全体の送信を行う。
-        capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
+        capabilities.setTextDocumentSync(TextDocumentSyncKind.Incremental);
         // 先ほど作った補完オプションを capabilities に設定
         capabilities.setCompletionProvider(completionOptions);
 

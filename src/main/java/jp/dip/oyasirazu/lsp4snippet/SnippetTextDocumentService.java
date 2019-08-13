@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -154,15 +155,24 @@ public class SnippetTextDocumentService implements TextDocumentService {
     /**
      * ファイル更新通知を受け付ける。
      *
-     * 本実装においては、 `TextDocumentSyncKind.Full` が指定されているものとして実装する。
+     * 本実装においては、 `TextDocumentSyncKind.Incremental` が指定されているものとして実装する。
      */
     @Override
     public void didChange(DidChangeTextDocumentParams params) {
         String uri = params.getTextDocument().getUri();
 
-        // `TextDocumentSyncKind.Full` を指定している前提で、
-        // ContentChanges の先頭テキストにファイル全文が入っているものとして処理する。
-        StringBuilder textContent = new StringBuilder(params.getContentChanges().get(0).getText());
+        StringBuilder textContent = this.textDocuments.get(uri);
+
+        if (textContent == null) {
+            throw new RuntimeException(String.format("uri(%s) not found.", uri));
+        }
+
+        // 変更点リストを取得
+        List<TextDocumentContentChangeEvent> contentChanges = params.getContentChanges();
+
+        for(var c : contentChanges) {
+            textContent = applyChangeEvent(textContent, c);
+        }
 
         this.textDocuments.put(uri, textContent);
     }
@@ -174,4 +184,34 @@ public class SnippetTextDocumentService implements TextDocumentService {
     @Override
     public void didSave(DidSaveTextDocumentParams params) {
     }
+
+    private StringBuilder applyChangeEvent(StringBuilder textContent, TextDocumentContentChangeEvent tdcce) {
+
+        StringBuilder newTextContent = new StringBuilder(textContent);
+
+        if (tdcce.getRange() == null && tdcce.getRangeLength() == 0) {
+            newTextContent = new StringBuilder(tdcce.getText());
+        } else {
+            newTextContent = new StringBuilder(textContent);
+            TextEdit textEdit = createTextEdit(tdcce);
+            applyTextEdit(newTextContent,textEdit);
+        }
+
+        return newTextContent;
+    }
+
+    private TextEdit createTextEdit(TextDocumentContentChangeEvent tdcce) {
+        TextEdit te = new TextEdit();
+        te.setNewText(tdcce.getText());
+        te.setRange(tdcce.getRange());
+        return te;
+    }
+
+    private void applyTextEdit(StringBuilder textContent, TextEdit textEdit) {
+        int startIndex = TextDocumentUtil.getIndex(textContent, textEdit.getRange().getStart());
+        int endIndex = TextDocumentUtil.getIndex(textContent, textEdit.getRange().getEnd());
+
+        textContent.replace(startIndex, endIndex, textEdit.getNewText());
+    }
 }
+
