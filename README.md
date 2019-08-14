@@ -13,9 +13,10 @@ Features:
         - [x] : multi YAML file support.
         - [x] : glob support.
     - [x] : insert indent
+    - [ ] : supply template if content is empty.
 - [ ] : ~~file extension to file type mapping mechanism~~
     - supported by YAML anchor and alias. See: [AnchorAndAlias.yaml](./src/test/resources/snippet/config/AnchorAndAlias.yaml)
-- [ ] : incremental synchronization
+- [x] : incremental synchronization
 
 
 Usage:
