@@ -72,6 +72,23 @@ public class TextDocumentUtilTest {
     }
 
     @Test
+    public void testGetIndex_emptyLines() {
+        StringBuilder textDocument = new StringBuilder("\n\n");
+
+        Position position_0_0 = new Position(0, 0);
+        int position_0_0_index = TextDocumentUtil.getIndex(textDocument, position_0_0);
+        assertEquals("new Position(0, 0) then index is 0.", 0, position_0_0_index);
+
+        Position position_1_0 = new Position(1, 0);
+        int position_1_0_index = TextDocumentUtil.getIndex(textDocument, position_1_0);
+        assertEquals("new Position(1, 0) then index is 1.", 1, position_1_0_index);
+
+        Position position_2_0 = new Position(2, 0);
+        int position_2_0_index = TextDocumentUtil.getIndex(textDocument, position_2_0);
+        assertEquals("new Position(2, 0) then index is 2.", 2, position_2_0_index);
+    }
+
+    @Test
     public void testGetInputedChars() {
         {
             StringBuilder textDocument = new StringBuilder("123 456\nabc defg\n");

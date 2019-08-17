@@ -54,16 +54,21 @@ public class TextDocumentUtil {
 
         int firstOfLineIndex = 0;
         for (int i = 0; i < lineIndex; i++) {
+            // TODO: for の外に出す
+            int fromIndex = 0;
+            if (i > 0) {
+                fromIndex++;
+            }
             // TODO: `\r\n`, `\r` 改行コードへの対応
-            firstOfLineIndex = text.indexOf("\n", firstOfLineIndex + 1);
+            firstOfLineIndex = text.indexOf("\n", firstOfLineIndex + fromIndex);
+        }
+
+        // indexOf で取得するのは `\n` のインデックスなので、 2 行目以降は +1 する。
+        if (lineIndex > 0) {
+            firstOfLineIndex++;
         }
 
         int positionIndex = firstOfLineIndex + characterIndex;
-
-        // indexOf で取得するのは `\n` のインデックスなので、 2 行目以降は +1 する。
-        if (firstOfLineIndex > 0) {
-            positionIndex++;
-        }
 
         return positionIndex;
     }
