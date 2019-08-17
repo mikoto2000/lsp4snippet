@@ -170,7 +170,7 @@ public class SnippetTextDocumentService implements TextDocumentService {
         // 変更点リストを取得
         List<TextDocumentContentChangeEvent> contentChanges = params.getContentChanges();
 
-        for(var c : contentChanges) {
+        for(TextDocumentContentChangeEvent c : contentChanges) {
             textContent = applyChangeEvent(textContent, c);
         }
 
