@@ -15,4 +15,24 @@ snippets:
         - label: bbbb
           description: bbbb description
           newText: newText5
+        - label: aaaa
+          type: template
+          description: aaaa description
+          newText: newText6
+        - label: aaab
+          type: template
+          description: aaab description
+          newText: newText7
+        - label: aabb
+          type: template
+          description: dabb escription
+          newText: newText8
+        - label: abbb
+          type: template
+          description: abbb description
+          newText: newText9
+        - label: bbbb
+          type: template
+          description: bbbb description
+          newText: newText10
 

@@ -52,7 +52,10 @@ public class SnippetSupplier {
      * @return スニペットリスト
      */
     public List<Snippet> getSnippets(String fileType) {
-        return this.snippets.getOrDefault(fileType, Collections.emptyList());
+        return this.snippets.getOrDefault(fileType, Collections.emptyList())
+                .stream()
+                .filter(i -> i.getType().equals(Snippet.TYPE_SNIPPET))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -67,10 +70,40 @@ public class SnippetSupplier {
 
         // ラベルの先頭文字列が、入力済み文字列であるものを抽出して返却
         return snippetForFileType.stream()
+                .filter(i -> i.getType().equals(Snippet.TYPE_SNIPPET))
                 .filter(i -> i.getLabel().startsWith(inputedString))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 指定されたファイルタイプに対応するテンプレートのリストを返却する。
+     *
+     * @param fileType ファイルタイプ
+     * @return テンプレートリスト
+     */
+    public List<Snippet> getTemplates(String fileType) {
+        return this.snippets.getOrDefault(fileType, Collections.emptyList())
+                .stream()
+                .filter(i -> i.getType().equals(Snippet.TYPE_TEMPLATE))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 指定されたファイルタイプ・入力済み文字列に対応するテンプレートのリストを返却する。
+     *
+     * @param fileType ファイルタイプ
+     * @param inputedString 入力済み文字列
+     * @return テンプレートリスト
+     */
+    public List<Snippet> getTemplates(String fileType, String inputedString) {
+        List<Snippet> snippetForFileType = this.snippets.getOrDefault(fileType, Collections.emptyList());
+
+        // ラベルの先頭文字列が、入力済み文字列であるものを抽出して返却
+        return snippetForFileType.stream()
+                .filter(i -> i.getType().equals(Snippet.TYPE_TEMPLATE))
+                .filter(i -> i.getLabel().startsWith(inputedString))
+                .collect(Collectors.toList());
+    }
     public SnippetSupplier merge(SnippetSupplier other) {
         HashMap<String, List<Snippet>> mySnippets = new HashMap<String, List<Snippet>>(this.snippets);
         Map<String, List<Snippet>> otherSnippets = other.snippets;
@@ -101,8 +134,16 @@ public class SnippetSupplier {
                         if (map.containsKey("label")
                                     && map.containsKey("description")
                                     && map.containsKey("newText")) {
+
+                            // type が未設定の場合、 Snippet.TYPE_SNIPPET として扱う
+                            String type = map.get("type");
+                            if (type == null) {
+                                type = Snippet.TYPE_SNIPPET;
+                            }
+
                             return new Snippet(
                                     map.get("label"),
+                                    type,
                                     map.get("description"),
                                     map.get("newText"));
                         }

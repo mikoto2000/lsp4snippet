@@ -54,6 +54,44 @@ public class SnippetSupplierTest {
     }
 
     @Test
+    public void testGetTemplates_String() throws IOException {
+        InputStreamReader yaml = new InputStreamReader(
+                        ClassLoader.getSystemResourceAsStream("snippet/config/GetSnippets_String.yaml"),
+                        "UTF-8");
+        SnippetSupplier ss = SnippetSupplier.createFromYaml(yaml);
+        List<Snippet> snippets = ss.getTemplates(FILE_TYPE_BASIC);
+
+        assertSame("check snippets size.", snippets.size(), 2);
+
+        // TODO: snippets に想定通りの Snippet が含まれているかのチェック
+    }
+
+    @Test
+    public void testGetTemplates_StringString() throws IOException {
+        InputStreamReader yaml = new InputStreamReader(
+                        ClassLoader.getSystemResourceAsStream("snippet/config/GetSnippets_StringString.yaml"),
+                        "UTF-8");
+        SnippetSupplier ss = SnippetSupplier.createFromYaml(yaml);
+
+        List<Snippet> snippets = ss.getTemplates(FILE_TYPE_BASIC, "");
+        assertSame("check snippets size.", snippets.size(), 5);
+
+        List<Snippet> snippets_a = ss.getTemplates(FILE_TYPE_BASIC, "a");
+        assertSame("check snippets size.", snippets_a.size(), 4);
+
+        List<Snippet> snippets_aa = ss.getTemplates(FILE_TYPE_BASIC, "aa");
+        assertSame("check snippets size.", snippets_aa.size(), 3);
+
+        List<Snippet> snippets_aaa = ss.getTemplates(FILE_TYPE_BASIC, "aaa");
+        assertSame("check snippets size.", snippets_aaa.size(), 2);
+
+        List<Snippet> snippets_aaaa = ss.getTemplates(FILE_TYPE_BASIC, "aaaa");
+        assertSame("check snippets size.", snippets_aaaa.size(), 1);
+
+        // TODO: snippets に想定通りの Snippet が含まれているかのチェック
+    }
+
+    @Test
     public void testMarkAndAlias() throws IOException {
         InputStreamReader yaml = new InputStreamReader(
                         ClassLoader.getSystemResourceAsStream("snippet/config/AnchorAndAlias.yaml"),
@@ -83,19 +121,19 @@ public class SnippetSupplierTest {
         assertEquals("fileType1 size is `4`", 4, fileType1Snippets.size());
 
         assertTrue("fileType1Snippets contains `{item1, item1 description, item1 newText}`",
-                fileType1Snippets.contains(new Snippet("item1", "item1 description", "item1 newText")));
+                fileType1Snippets.contains(new Snippet("item1", "snippet", "item1 description", "item1 newText")));
         assertTrue("fileType1Snippets contains `{item2, item2 description, item2 newText}`",
-                fileType1Snippets.contains(new Snippet("item2", "item2 description", "item2 newText")));
+                fileType1Snippets.contains(new Snippet("item2", "snippet", "item2 description", "item2 newText")));
         assertTrue("fileType1Snippets contains `{item3, item3 description, item3 newText}`",
-                fileType1Snippets.contains(new Snippet("item3", "item3 description", "item3 newText")));
+                fileType1Snippets.contains(new Snippet("item3", "snippet", "item3 description", "item3 newText")));
         assertTrue("fileType1Snippets contains `{item4, item4 description, item4 newText}`",
-                fileType1Snippets.contains(new Snippet("item4", "item4 description", "item4 newText")));
+                fileType1Snippets.contains(new Snippet("item4", "snippet", "item4 description", "item4 newText")));
 
         List<Snippet> fileType2Snippets = mergedSs.getSnippets("fileType2");
         assertEquals("fileType2 size is `2`", 2, fileType2Snippets.size());
         assertTrue("fileType2Snippets contains `{item1, item1 description, item1 newText}`",
-                fileType1Snippets.contains(new Snippet("item1", "item1 description", "item1 newText")));
+                fileType1Snippets.contains(new Snippet("item1", "snippet", "item1 description", "item1 newText")));
         assertTrue("fileType2Snippets contains `{item2, item2 description, item2 newText}`",
-                fileType1Snippets.contains(new Snippet("item2", "item2 description", "item2 newText")));
+                fileType1Snippets.contains(new Snippet("item2", "snippet", "item2 description", "item2 newText")));
     }
 }

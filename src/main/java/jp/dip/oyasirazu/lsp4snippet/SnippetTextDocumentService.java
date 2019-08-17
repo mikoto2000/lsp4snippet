@@ -87,56 +87,29 @@ public class SnippetTextDocumentService implements TextDocumentService {
             System.err.printf("fileExtension: %s\n", fileExtension);
         }
 
-        // 「入力済み文字列」を取得
-        // 入力済み文字列: カーソル位置直前の 「/\w/(単語にマッチする正規表現)」
+        // Uri からテキストを取得
         String targetUri = params.getTextDocument().getUri();
         StringBuilder targetText = this.textDocuments.get(targetUri);
+
+        // 「入力済み文字列」を取得
+        // 入力済み文字列: カーソル位置直前の 「/\w/(単語にマッチする正規表現)」
         Position cursorPosition = params.getPosition();
         String inputedChars = TextDocumentUtil.getInputedChars(targetText, cursorPosition);
         if (IS_DEBUG) {
             System.err.printf("inputedChars: %s\n", inputedChars);
         }
 
-        // 既存インデント文字列取得
-        // 既存インデント文字列: カーソル行の「/^\s+/(空白文字列にマッチする正規表現)」
-        // TODO: メソッド化
-        String indentChars = TextDocumentUtil.getIndentChars(targetText, cursorPosition.getLine());
-        if (IS_DEBUG) {
-            System.err.printf("indentChars: %s\n", indentChars);
+        // テキストの状態に応じてテンプレートかスニペットを取得、返却
+        int textLength = targetText.toString().replaceFirst("\n", "").length();
+        int inputedCharsLength = inputedChars.length();
+        if (textLength - inputedCharsLength == 0) {
+            // ファイルが空の場合はテンプレートを返却
+            return getTemplate(fileExtension, inputedChars);
+        } else {
+            // ファイルが空でなければスニペットを返却
+            return getSnippet(targetText, fileExtension, cursorPosition, inputedChars);
         }
 
-        // 改行文字の後ろに indentChars を追加することで、 2 行目以降のインデントを保つ
-        final String indentReplaceChars = "\n" + indentChars;
-
-        // 「ファイル拡張子」と「入力済み文字列」にマッチするスニペットを取得
-        List<Snippet> snippets = this.snippetSupplier.getSnippets(fileExtension, inputedChars);
-        if (IS_DEBUG) {
-            System.err.printf("snippets: %s\n", snippets);
-        }
-
-        List<CompletionItem> completionItemList = snippets.stream().map(i ->
-                {
-                    String label = i.getLabel();
-                    Position startPosition = CompletionItemUtil.getCompletingStringPosition(targetText, cursorPosition, label);
-
-                    // インデントを保つために改行文字を置換
-                    String newText = i.getNewText().replaceAll("\n", indentReplaceChars);
-
-                    TextEdit textEdit = new TextEdit(
-                            new Range(
-                                startPosition,
-                                params.getPosition()),
-                            newText);
-                    CompletionItem textEditItem = new CompletionItem(label);
-                    textEditItem.setKind(CompletionItemKind.Snippet);
-                    textEditItem.setInsertTextFormat(InsertTextFormat.Snippet);
-                    textEditItem.setTextEdit(textEdit);
-                    textEditItem.setDetail(i.getDescription());
-
-                    return textEditItem;
-                }).collect(Collectors.toList());
-
-        return CompletableFuture.completedFuture(Either.forLeft(completionItemList));
     }
 
     @Override
@@ -199,6 +172,71 @@ public class SnippetTextDocumentService implements TextDocumentService {
 
         return newTextContent;
     }
+
+    private CompletableFuture<Either<List<CompletionItem>, CompletionList>> getTemplate(String fileExtension, String inputedChars) {
+        List<Snippet> snippets = this.snippetSupplier.getTemplates(fileExtension, inputedChars);
+
+        List<CompletionItem> completionItemList = snippets.stream()
+                .map(i -> {
+                    TextEdit textEdit = new TextEdit(
+                            new Range(
+                                new Position(0, 0),
+                                new Position(0, inputedChars.length())),
+                            i.getNewText());
+
+                    return createCompletionItem(i.getLabel(), i.getDescription(), textEdit);
+                }).collect(Collectors.toList());
+
+        return CompletableFuture.completedFuture(Either.forLeft(completionItemList));
+    }
+
+    private CompletableFuture<Either<List<CompletionItem>, CompletionList>> getSnippet(StringBuilder targetText, String fileExtension, Position cursorPosition, String inputedChars) {
+        // 既存インデント文字列取得
+        // 既存インデント文字列: カーソル行の「/^\s+/(空白文字列にマッチする正規表現)」
+        String indentChars = TextDocumentUtil.getIndentChars(targetText, cursorPosition.getLine());
+        if (IS_DEBUG) {
+            System.err.printf("indentChars: %s\n", indentChars);
+        }
+
+        // 改行文字の後ろに indentChars を追加することで、 2 行目以降のインデントを保つ
+        final String indentReplaceChars = "\n" + indentChars;
+
+        // 「ファイル拡張子」と「入力済み文字列」にマッチするスニペットを取得
+        List<Snippet> snippets = this.snippetSupplier.getSnippets(fileExtension, inputedChars);
+        if (IS_DEBUG) {
+            System.err.printf("snippets: %s\n", snippets);
+        }
+
+        List<CompletionItem> completionItemList = snippets.stream()
+                .map(i -> {
+                    String label = i.getLabel();
+                    Position startPosition = CompletionItemUtil.getCompletingStringPosition(targetText, cursorPosition, label);
+
+                    // インデントを保つために改行文字を置換
+                    String newText = i.getNewText().replaceAll("\n", indentReplaceChars);
+
+                    TextEdit textEdit = new TextEdit(
+                            new Range(
+                                startPosition,
+                                cursorPosition),
+                            newText);
+
+                    return createCompletionItem(label, i.getDescription(), textEdit);
+                }).collect(Collectors.toList());
+
+        return CompletableFuture.completedFuture(Either.forLeft(completionItemList));
+    }
+
+    private CompletionItem createCompletionItem(String label, String description, TextEdit textEdit) {
+        CompletionItem textEditItem = new CompletionItem(label);
+        textEditItem.setKind(CompletionItemKind.Snippet);
+        textEditItem.setInsertTextFormat(InsertTextFormat.Snippet);
+        textEditItem.setTextEdit(textEdit);
+        textEditItem.setDetail(description);
+
+        return textEditItem;
+    }
+
 
     private TextEdit createTextEdit(TextDocumentContentChangeEvent tdcce) {
         TextEdit te = new TextEdit();

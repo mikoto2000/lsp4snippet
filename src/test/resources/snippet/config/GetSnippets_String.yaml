@@ -6,6 +6,14 @@ snippets:
         - label: label2
           description: description2
           newText: newText2
+        - label: label5
+          type: template
+          description: description5
+          newText: newText5
+        - label: label6
+          type: template
+          description: description6
+          newText: newText6
     no_contain_file_type:
         - label: label3
           description: description3
@@ -13,4 +21,12 @@ snippets:
         - label: label4
           description: description4
           newText: newText4
+        - label: label7
+          type: template
+          description: description7
+          newText: newText7
+        - label: label8
+          type: template
+          description: description8
+          newText: newText8
 
