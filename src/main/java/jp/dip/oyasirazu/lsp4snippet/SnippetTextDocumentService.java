@@ -50,21 +50,16 @@ public class SnippetTextDocumentService implements TextDocumentService {
     /**
      * Constructor
      */
-    public SnippetTextDocumentService(List<String> snippetFilePaths) {
+    public SnippetTextDocumentService(List<InputStreamReader> snippetStreams) {
         this.textDocuments = new HashMap<String, StringBuilder>();
 
         snippetSupplier = new SnippetSupplier();
 
         // 指定された設定ファイルをすべて読み込む
-        for (String snippetFilePath : snippetFilePaths) {
+        for (InputStreamReader snippetStream : snippetStreams) {
             try {
-                // 設定ファイルを読み込んで SnippetSupplier をインスタンス化
-                InputStreamReader yaml = new InputStreamReader(
-                            new FileInputStream(snippetFilePath),
-                            "UTF-8");
-
                 // SnippetSupplier を生成してマージ
-                snippetSupplier = snippetSupplier.merge(SnippetSupplier.createFromYaml(yaml));
+                snippetSupplier = snippetSupplier.merge(SnippetSupplier.createFromYaml(snippetStream));
             } catch (IOException e) {
                 // TODO: 例外送出
                 System.err.printf("Catch exception: %s\n", e);
@@ -250,6 +245,20 @@ public class SnippetTextDocumentService implements TextDocumentService {
         int endIndex = TextDocumentUtil.getIndex(textContent, textEdit.getRange().getEnd());
 
         textContent.replace(startIndex, endIndex, textEdit.getNewText());
+    }
+
+    public static SnippetTextDocumentService createFromFilePath(List<String> snippetFilePaths) {
+        return new SnippetTextDocumentService(snippetFilePaths.stream().map(i -> {
+            try {
+                // 設定ファイルを読み込んで SnippetSupplier をインスタンス化
+                return new InputStreamReader(
+                            new FileInputStream(i), "UTF-8");
+            } catch (IOException e) {
+                // TODO: 例外送出
+                System.err.printf("Catch exception: %s\n", e);
+            }
+            return (InputStreamReader)null;
+        }).collect(Collectors.toList()));
     }
 }
 
